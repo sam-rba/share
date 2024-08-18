@@ -16,15 +16,8 @@ func NewConstSlice[T any](slc []T) ConstSlice[T] {
 // Elems returns a channel that yields each successive element of the slice.
 // Once drained, the channel is closed automatically, and therefore should NOT be closed again by the caller.
 func (cs ConstSlice[T]) Elems() <-chan T {
-	elems := make(chan T) // will be closed by request handler
-	cs.requests <- elems
-	c := make(chan T)
-	go func() {
-		defer close(c)
-		for elem := range elems {
-			c <- elem
-		}
-	}()
+	c := make(chan T) // will be closed by request handler
+	cs.requests <- c
 	return c
 }
 
