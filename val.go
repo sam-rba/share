@@ -47,6 +47,19 @@ func (v Val[T]) Get() T {
 	return <-c
 }
 
+// TryGet returns the stored value if it has already been set, or false if it hasn't.
+func (v Val[T]) TryGet() (*T, bool) {
+	c := make(chan T)
+	defer close(c)
+	select {
+	case v.Request <- c:
+		val := <-c
+		return &val, true
+	default:
+		return nil, false
+	}
+}
+
 func (v Val[T]) Close() {
 	close(v.Request)
 	close(v.Set)
