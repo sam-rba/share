@@ -3,7 +3,7 @@ package share_test
 import (
 	"testing"
 
-	"git.samanthony.xyz/share"
+	"github.com/sam-rba/share"
 )
 
 // Set value in local goroutine, verify in remote goroutine.

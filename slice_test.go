@@ -3,7 +3,7 @@ package share_test
 import (
 	"testing"
 
-	"git.samanthony.xyz/share"
+	"github.com/sam-rba/share"
 )
 
 func TestConstSlice(t *testing.T) {
