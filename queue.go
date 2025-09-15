@@ -8,8 +8,7 @@ package share
 type Queue[T any] struct {
 	// Sending to Enqueue adds an element to the back of the Queue
 	// and never blocks.
-	Enqueue chan<-T
-
+	Enqueue chan<- T
 
 	// Receiving from Dequeue removes an element from the front
 	// of the queue or, if the queue is empty, blocks until an element

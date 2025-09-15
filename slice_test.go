@@ -1,6 +1,7 @@
 package share_test
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/sam-rba/share"
@@ -8,12 +9,21 @@ import (
 
 func TestConstSlice(t *testing.T) {
 	orig := []string{"foo", "bar", "baz"}
+
 	shared := share.NewConstSlice(orig)
-	verifySameSlice(shared, orig, t)
+	defer shared.Close()
+
+	var wg sync.WaitGroup
+	wg.Add(2)
 	go func() {
-		defer shared.Close()
 		verifySameSlice(shared, orig, t)
+		wg.Done()
 	}()
+	go func() {
+		verifySameSlice(shared, orig, t)
+		wg.Done()
+	}()
+	wg.Wait()
 }
 
 func verifySameSlice[T comparable](cs share.ConstSlice[T], s []T, t *testing.T) {

@@ -1,6 +1,7 @@
 package share_test
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/sam-rba/share"
@@ -9,29 +10,40 @@ import (
 // Set value in local goroutine, verify in remote goroutine.
 func TestValSetLocal(t *testing.T) {
 	val := "foo"
+
 	sharedVal := share.NewVal[string]()
 	sharedVal.Set <- val
-	verifySameVal(sharedVal, val, t)
+	defer sharedVal.Close()
+
+	var wg sync.WaitGroup
+	wg.Add(2)
 	go func() {
-		defer sharedVal.Close()
 		verifySameVal(sharedVal, val, t)
+		wg.Done()
 	}()
+	go func() {
+		verifySameVal(sharedVal, val, t)
+		wg.Done()
+	}()
+	wg.Wait()
 }
 
 // Set value in remote goroutine, verify in local goroutine.
 func TestValSetRemote(t *testing.T) {
 	val := "foo"
+
 	sharedVal := share.NewVal[string]()
 	defer sharedVal.Close()
-	done := make(chan bool)
-	defer close(done)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
 		sharedVal.Set <- val
 		verifySameVal(sharedVal, val, t)
-		done <- true
+		wg.Done()
 	}()
 	verifySameVal(sharedVal, val, t)
-	<-done
+	wg.Wait()
 }
 
 // Val.TryGet() before Set should fail.
